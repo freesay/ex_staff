@@ -183,7 +183,7 @@ class Common():
         with open(f'{date[-1]}.{date[-2]}.csv', 'w', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
             for line in self.text_box.get("1.0", 'end-1c').split('\n'):
-                writer.writerow(line.split(',', 2))
+                writer.writerow(line.split(','))
 
     def init_widgets(self):
         self.init_frames()
