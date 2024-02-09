@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog
 from tkinter import ttk
+from tkinter import font
 import datetime as dt
 import csv
 
@@ -22,10 +23,14 @@ def staff_complete(file_name):
 
 
 def employees_complete(staff):
-    employees_list = {}
+    tmp_dict = {}
+    sorted_dict = {}
     for login, data in staff.items():
-        employees_list[login] = data['position']
-    return employees_list
+        tmp_dict[login] = data['position']
+    sorted_list = sorted(tmp_dict.items(), key=lambda x: x[1])
+    for el in sorted_list:
+        sorted_dict[el[0]] = el[1]
+    return sorted_dict
 
 
 def positions_complete(staff):
@@ -46,8 +51,9 @@ class Common():
     def __init__(self):
         self.root = tk.Tk()
         self.root.geometry('1000x600')
-        self.root.minsize(1000, 600)
+        self.root.minsize(1200, 600)
         self.root.title('ex_staff')
+
         self.rad_var = tk.StringVar()
         self.rad_var.set('position')
         self.date_var = tk.StringVar()
@@ -94,8 +100,8 @@ class Common():
             canvas.yview_scroll(-scale, "units")
 
     def init_buttons(self):
-        self.btn_open_file = ttk.Button(self.btn_open_file_frame, text='Open File', width=60, command=self.open_file)
-        self.btn_generate = ttk.Button(self.btn_save_frame, text='Generate Data', width=30, command=self.get_data_check)
+        self.btn_open_file = ttk.Button(self.btn_open_file_frame, text='Open File', width=70, command=self.open_file)
+        self.btn_generate = ttk.Button(self.btn_save_frame, text='Generate Data', command=self.get_data_check)
         self.btn_save_txt = ttk.Button(self.btn_save_frame, text='Save to TXT', command=self.save_txt)
         self.btn_save_csv = ttk.Button(self.btn_save_frame, text='Save to CSV', command=self.save_csv)
 
@@ -230,7 +236,8 @@ class Common():
                 self.checks[el] = tk.IntVar()
             for key, value in temp_data.items():
                 self.checkbox_frame = ttk.Frame(self.scrollable_frame)
-                check_box = ttk.Checkbutton(self.checkbox_frame, text=f'{key} - {value}', variable=self.checks[key], onvalue=1, offvalue=0)
+                text = f'{key}@ - {value}'
+                check_box = ttk.Checkbutton(self.checkbox_frame, text=text, variable=self.checks[key], onvalue=1, offvalue=0)
                 check_box.pack(anchor='nw')
                 self.checkbox_frame.pack(anchor='nw', padx=5)
         return self.checks
