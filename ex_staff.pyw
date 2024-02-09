@@ -193,17 +193,10 @@ class Common():
             self.text_box.delete('1.0', 'end-1c')
             self.text_box.insert('1.0', generate_data)
         if self.rad_var.get() == 'employees':
-            data_list = []
             generate_data = ''
-            for key, value in data_check.items():
+            for login, value in data_check.items():
                 if value == 1:
-                    for login, data in self.data_employees.items():
-                        if login == key:
-                            line = f'{login}@\t\t - {data["position"]}\n'
-                            if line not in data_list:
-                                data_list.append(line)
-            for el in data_list:
-                generate_data += el
+                    generate_data += f'{self.text_date.get()},{login},,"{self.text_ticket.get()}"\n'
             self.text_box.delete('1.0', 'end-1c')
             self.text_box.insert('1.0', generate_data)
 
@@ -215,18 +208,31 @@ class Common():
         self.checks = {}
         if self.rad_var.get() == 'position':
             temp_data = self.positions
+            for el in temp_data:
+                self.checks[el] = tk.IntVar()
+            for el in temp_data:
+                self.checkbox_frame = ttk.Frame(self.scrollable_frame)
+                check_box = ttk.Checkbutton(self.checkbox_frame, text=el, variable=self.checks[el], onvalue=1, offvalue=0)
+                check_box.pack(anchor='nw')
+                self.checkbox_frame.pack(anchor='nw', padx=5)
         elif self.rad_var.get() == 'department':
             temp_data = self.departments
+            for el in temp_data:
+                self.checks[el] = tk.IntVar()
+            for el in temp_data:
+                self.checkbox_frame = ttk.Frame(self.scrollable_frame)
+                check_box = ttk.Checkbutton(self.checkbox_frame, text=el, variable=self.checks[el], onvalue=1, offvalue=0)
+                check_box.pack(anchor='nw')
+                self.checkbox_frame.pack(anchor='nw', padx=5)
         else:
             temp_data = self.employees
-
-        for el in temp_data:
-            self.checks[el] = tk.IntVar()
-        for el in temp_data:
-            self.checkbox_frame = ttk.Frame(self.scrollable_frame)
-            check_box = ttk.Checkbutton(self.checkbox_frame, text=el, variable=self.checks[el], onvalue=1, offvalue=0)
-            check_box.pack(anchor='nw')
-            self.checkbox_frame.pack(anchor='nw', padx=5)
+            for el in temp_data:
+                self.checks[el] = tk.IntVar()
+            for key, value in temp_data.items():
+                self.checkbox_frame = ttk.Frame(self.scrollable_frame)
+                check_box = ttk.Checkbutton(self.checkbox_frame, text=f'{key} - {value}', variable=self.checks[key], onvalue=1, offvalue=0)
+                check_box.pack(anchor='nw')
+                self.checkbox_frame.pack(anchor='nw', padx=5)
         return self.checks
 
     def save_txt(self):
