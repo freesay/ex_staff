@@ -21,6 +21,13 @@ def staff_complete(file_name):
     return staff
 
 
+def employees_complete(staff):
+    employees_list = {}
+    for login, data in staff.items():
+        employees_list[login] = data['position']
+    return employees_list
+
+
 def positions_complete(staff):
     positions_list = []
     for login, data in staff.items():
@@ -56,24 +63,49 @@ class Common():
         self.main_frame = ttk.Frame(self.root)
         self.btn_open_file_frame = ttk.Frame(self.main_frame)
         self.radio_btn_frame = ttk.Frame(self.main_frame)
-        self.checkbox_frame = ttk.Frame(self.main_frame)
-        self.btn_generate_frame = ttk.Frame(self.main_frame)
+
+        self.canvas_frame = ttk.Frame(self.main_frame)
+        self.canvas = tk.Canvas(self.canvas_frame, borderwidth=0, highlightthickness=0)
+        self.canvas_scroll_y = ttk.Scrollbar(self.canvas_frame, orient='vertical', command=self.canvas.yview)
+        self.scrollable_frame = ttk.Frame(self.canvas)
+        self.canvas.config(yscrollcommand=self.canvas_scroll_y.set)
+
+        self.canvas.bind("<Enter>", lambda event: self.canvas.bind_all("<MouseWheel>", self.on_mouse_wheel))
+        self.canvas.bind("<Leave>", lambda event: self.canvas.unbind_all("<MouseWheel>"))
+        self.scrollable_frame.bind('<Configure>', lambda e: self.frame_configure())
+        self.wrap_frame = self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor='nw')
+
+        self.btn_save_frame = ttk.Frame(self.main_frame)
         self.text_frame = ttk.Frame(self.root)
         self.entry_frame = ttk.Frame(self.text_frame)
         self.entry_frame_date = ttk.LabelFrame(self.entry_frame, text='Date')
         self.entry_frame_ticket = ttk.LabelFrame(self.entry_frame, text='Ticket')
 
+    def frame_configure(self):
+        canvas = self.canvas
+        canvas.configure(scrollregion=canvas.bbox("all"))
+        canvas.itemconfigure(self.wrap_frame, width=canvas.winfo_width())
+
+    def on_mouse_wheel(self, event, scale=3):
+        canvas = self.canvas
+        if event.delta<0:
+            canvas.yview_scroll(scale, "units")
+        else:
+            canvas.yview_scroll(-scale, "units")
+
     def init_buttons(self):
         self.btn_open_file = ttk.Button(self.btn_open_file_frame, text='Open File', width=60, command=self.open_file)
-        self.btn_generate = ttk.Button(self.btn_generate_frame, text='Generate Data', command=self.get_data_check)
-        self.btn_save_txt = ttk.Button(self.btn_generate_frame, text='Save to TXT', command=self.save_txt)
-        self.btn_save_csv = ttk.Button(self.btn_generate_frame, text='Save to CSV', command=self.save_csv)
+        self.btn_generate = ttk.Button(self.btn_save_frame, text='Generate Data', width=30, command=self.get_data_check)
+        self.btn_save_txt = ttk.Button(self.btn_save_frame, text='Save to TXT', command=self.save_txt)
+        self.btn_save_csv = ttk.Button(self.btn_save_frame, text='Save to CSV', command=self.save_csv)
 
     def init_radio_buttons(self):
         self.rad_pos = ttk.Radiobutton(self.radio_btn_frame, text='Position',
                                        variable=self.rad_var, value='position', command=self.get_type_data)
         self.rad_dep = ttk.Radiobutton(self.radio_btn_frame, text='Department',
                                        variable=self.rad_var, value='department', command=self.get_type_data)
+        self.rad_emp = ttk.Radiobutton(self.radio_btn_frame, text='Employees',
+                                       variable=self.rad_var, value='employees', command=self.get_type_data)
 
     def init_text_data(self):
         self.text_date = tk.Entry(self.entry_frame_date, textvariable=self.date_var)
@@ -96,11 +128,16 @@ class Common():
         self.entry_frame_ticket.pack(side='left', fill='x', expand=True)
 
         self.btn_open_file_frame.pack(anchor='nw', side='top', fill='x', padx=5, pady=5)
+        self.btn_save_frame.pack(side='bottom', fill='x', padx=5)
         self.radio_btn_frame.pack()
-        self.btn_generate_frame.pack(anchor='sw', side='bottom', fill='x', padx=5)
+
+        self.canvas_frame.pack(fill='both', expand=True, padx=5)
+        self.canvas.pack(side='left', fill='both', expand=True)
+        self.canvas_scroll_y.pack(side='right', fill='y')
 
         self.rad_pos.pack(side='left')
         self.rad_dep.pack(side='left')
+        self.rad_emp.pack(side='left')
 
         self.text_date.pack(side='top', fill='x', expand=True, padx=5, pady=5)
         self.text_ticket.pack(side='top', fill='x', expand=True, padx=5, pady=5)
@@ -108,8 +145,7 @@ class Common():
         self.scroll_x.pack(side='bottom', fill='x')
         self.text_box.pack(side='bottom', fill='both', expand=True, padx=5, pady=5)
 
-        self.checkbox_frame.pack(anchor='nw', side='top', fill='both', expand=True, padx=5, pady=5)
-        self.btn_open_file.pack(fill='x', pady=5)
+        self.btn_open_file.pack(side='left', fill='x', expand=True)
         self.btn_generate.pack(side='top', fill='x', expand=True, pady=5)
         self.btn_save_txt.pack(side='left', fill='x', expand=True)
         self.btn_save_csv.pack(side='left', fill='x', expand=True)
@@ -120,6 +156,7 @@ class Common():
         self.data_employees = staff_complete(self.file_name)
         self.positions = positions_complete(self.data_employees)
         self.departments = departments_complete(self.data_employees)
+        self.employees = employees_complete(self.data_employees)
         self.update_data()
         self.root.update()
 
@@ -155,6 +192,20 @@ class Common():
                 generate_data += el
             self.text_box.delete('1.0', 'end-1c')
             self.text_box.insert('1.0', generate_data)
+        if self.rad_var.get() == 'employees':
+            data_list = []
+            generate_data = ''
+            for key, value in data_check.items():
+                if value == 1:
+                    for login, data in self.data_employees.items():
+                        if login == key:
+                            line = f'{login}@\t\t - {data["position"]}\n'
+                            if line not in data_list:
+                                data_list.append(line)
+            for el in data_list:
+                generate_data += el
+            self.text_box.delete('1.0', 'end-1c')
+            self.text_box.insert('1.0', generate_data)
 
     def get_type_data(self):
         self.rad_var.set(self.rad_var.get())
@@ -164,13 +215,18 @@ class Common():
         self.checks = {}
         if self.rad_var.get() == 'position':
             temp_data = self.positions
-        else:
+        elif self.rad_var.get() == 'department':
             temp_data = self.departments
+        else:
+            temp_data = self.employees
+
         for el in temp_data:
             self.checks[el] = tk.IntVar()
         for el in temp_data:
+            self.checkbox_frame = ttk.Frame(self.scrollable_frame)
             check_box = ttk.Checkbutton(self.checkbox_frame, text=el, variable=self.checks[el], onvalue=1, offvalue=0)
             check_box.pack(anchor='nw')
+            self.checkbox_frame.pack(anchor='nw', padx=5)
         return self.checks
 
     def save_txt(self):
