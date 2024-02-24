@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog
 from tkinter import ttk
-from tkinter import font
 import datetime as dt
 import csv
 
