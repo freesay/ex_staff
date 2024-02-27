@@ -166,44 +166,53 @@ class Common():
         self.root.update()
 
     def get_data_check(self):
-        data_check = {}
-        for el in self.checks:
-            data_check[el] = self.checks[el].get()
+        try:
+            data_check = {}
+            for el in self.checks:
+                data_check[el] = self.checks[el].get()
 
-        if self.rad_var.get() == 'position':
+            if self.rad_var.get() == 'position':
+                generate_data = ''
+                for key, value in data_check.items():
+                    if value == 1:
+                        for login, data in self.data_employees.items():
+                            for el in data:
+                                if key == data[el]:
+                                    generate_data += f'{self.text_date.get()},{login},,"{self.text_ticket.get()}"\n'
+                self.text_box.delete('1.0', 'end-1c')
+                self.text_box.insert('1.0', generate_data)
+            if self.rad_var.get() == 'department':
+                data_list = []
+                generate_data = ''
+                for key, value in data_check.items():
+                    if value == 1:
+                        for login, data in self.data_employees.items():
+                            for el in data:
+                                if key == data[el]:
+                                    temp = data[el]
+                                    temp = temp.replace('"', '""')
+                                    line = f'{self.text_date.get()},,"{temp}","{self.text_ticket.get()}"\n'
+                                    if line not in data_list:
+                                        data_list.append(line)
+                for el in data_list:
+                    generate_data += el
+                self.text_box.delete('1.0', 'end-1c')
+                self.text_box.insert('1.0', generate_data)
+            if self.rad_var.get() == 'employees':
+                generate_data = ''
+                for login, value in data_check.items():
+                    if value == 1:
+                        generate_data += f'{self.text_date.get()},{login},,"{self.text_ticket.get()}"\n'
+                self.text_box.delete('1.0', 'end-1c')
+                self.text_box.insert('1.0', generate_data)
+        except:
             generate_data = ''
-            for key, value in data_check.items():
-                if value == 1:
-                    for login, data in self.data_employees.items():
-                        for el in data:
-                            if key == data[el]:
-                                generate_data += f'{self.text_date.get()},{login},,"{self.text_ticket.get()}"\n'
+            logins = self.text_box.get('1.0', 'end-1c')
+            for login in logins.split():
+                generate_data += f'{self.text_date.get()},{login},,"{self.text_ticket.get()}"\n'
             self.text_box.delete('1.0', 'end-1c')
             self.text_box.insert('1.0', generate_data)
-        if self.rad_var.get() == 'department':
-            data_list = []
-            generate_data = ''
-            for key, value in data_check.items():
-                if value == 1:
-                    for login, data in self.data_employees.items():
-                        for el in data:
-                            if key == data[el]:
-                                temp = data[el]
-                                temp = temp.replace('"', '""')
-                                line = f'{self.text_date.get()},,"{temp}","{self.text_ticket.get()}"\n'
-                                if line not in data_list:
-                                    data_list.append(line)
-            for el in data_list:
-                generate_data += el
-            self.text_box.delete('1.0', 'end-1c')
-            self.text_box.insert('1.0', generate_data)
-        if self.rad_var.get() == 'employees':
-            generate_data = ''
-            for login, value in data_check.items():
-                if value == 1:
-                    generate_data += f'{self.text_date.get()},{login},,"{self.text_ticket.get()}"\n'
-            self.text_box.delete('1.0', 'end-1c')
-            self.text_box.insert('1.0', generate_data)
+
 
     def get_type_data(self):
         self.rad_var.set(self.rad_var.get())
