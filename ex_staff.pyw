@@ -209,7 +209,7 @@ class Common():
             generate_data = ''
             logins = self.text_box.get('1.0', 'end-1c')
             for login in logins.split():
-                generate_data += f'{self.text_date.get()},{login},,"{self.text_ticket.get()}"\n'
+                generate_data += f'{self.text_date.get()},{login.rstrip("@")},,"{self.text_ticket.get()}"\n'
             self.text_box.delete('1.0', 'end-1c')
             self.text_box.insert('1.0', generate_data)
 
